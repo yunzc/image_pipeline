@@ -78,6 +78,9 @@ class PointCloudXyzrgbNodelet : public nodelet::Nodelet
   ros::Publisher pub_point_cloud_;
 
   image_geometry::PinholeCameraModel model_;
+  bool use_ros_time_;
+  bool rename_frame_id_;
+  std::string custom_frame_id_;
 
   virtual void onInit();
 
@@ -108,6 +111,9 @@ void PointCloudXyzrgbNodelet::onInit()
   private_nh.param("queue_size", queue_size, 5);
   bool use_exact_sync;
   private_nh.param("exact_sync", use_exact_sync, false);
+  private_nh.param("use_ros_time", use_ros_time_, false);
+  private_nh.param("rename_frame_id", rename_frame_id_, false);
+  private_nh.getParam("frame_id", custom_frame_id_);
 
   // Synchronize inputs. Topic subscriptions happen on demand in the connection callback.
   if (use_exact_sync)
@@ -256,6 +262,8 @@ void PointCloudXyzrgbNodelet::imageCb(const sensor_msgs::ImageConstPtr& depth_ms
   // Allocate new point cloud message
   PointCloud::Ptr cloud_msg (new PointCloud);
   cloud_msg->header = depth_msg->header; // Use depth image time stamp
+  if (use_ros_time_) cloud_msg->header.stamp = ros::Time::now();
+  if (rename_frame_id_) cloud_msg->header.frame_id = custom_frame_id_;
   cloud_msg->height = depth_msg->height;
   cloud_msg->width  = depth_msg->width;
   cloud_msg->is_dense = false;
