@@ -159,6 +159,7 @@ void RegisterNodelet::imageCb(const sensor_msgs::ImageConstPtr& depth_image_msg,
   {
     NODELET_WARN_THROTTLE(2, "TF2 exception:\n%s", ex.what());
     // If transform not found just use identity
+    depth_to_rgb = Eigen::Affine3d::Identity();
     /// @todo Can take on order of a minute to register a disconnect callback when we
     /// don't call publish() in this cb. What's going on roscpp?
   }
